@@ -26,9 +26,6 @@ server = JavaServer.lookup(ip)
 startlog = False
 player_online_times = defaultdict(int)
 
-# add help, visualizer, convert more commands, and add more graph fields
-#fields = ['Date', 'Time', 'Status', 'Ping', 'Version', 'Player Count', 'Player List', 'MOTD']
-
 async def serverreq():
     try:
         ping = await server.async_ping()
@@ -105,12 +102,20 @@ async def on_message(message):
             await message.channel.send(f'Server is online, ping is {online}ms from the bot to the server')
     
     if message.content.startswith('$version'):
-        version = (await serverreq())[0].version.name
+        try:
+            version = (await serverreq())[0].version.name # type: ignore
+        except:
+            await message.channel.send('Server is offline')
+            return
         await message.channel.send(f'The server is running {version}')
 
     if message.content.startswith('$players'):
-        player_count = (await serverreq())[0].players.online
-        player_list = (await serverreq())[0].players.sample
+        try:
+            player_count = (await serverreq())[0].players.online # type: ignore
+        except:
+            await message.channel.send('Server is offline')
+            return
+        player_list = (await serverreq())[0].players.sample # type: ignore
         if player_list is None:
             player_list_str = "None"
         else:
@@ -118,7 +123,11 @@ async def on_message(message):
         await message.channel.send(f"There are {player_count} players online\nPlayers online: {player_list_str}")
     
     if message.content.startswith('$motd'):
-        motd = (await serverreq())[0].motd.to_plain()
+        try:
+            motd = (await serverreq())[0].motd.to_plain() # type: ignore
+        except:
+            await message.channel.send('Server is offline')
+            return
         await message.channel.send(f'The MOTD is: {motd}')
     
     if message.content.startswith('$graph'):
